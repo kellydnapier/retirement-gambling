@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Retirement Gambling</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0a0b">
+
+<!-- iOS PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RG">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,400..900,0..100,0..1;1,9..144,400..900,0..100,0..1&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --bg-elevated: #141416;
+    --bg-card: #1a1a1d;
+    --bg-hover: #232327;
+    --border: #2a2a2f;
+    --border-soft: #1f1f23;
+    --text: #ebe8e0;
+    --text-muted: #8a8780;
+    --text-dim: #56544f;
+    --accent: #d4a574;
+    --accent-hover: #e0b888;
+    --green: #4ade80;
+    --green-dim: rgba(74, 222, 128, 0.12);
+    --red: #f87171;
+    --red-dim: rgba(248, 113, 113, 0.12);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251, 191, 36, 0.12);
+
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Manrope', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    --radius: 14px;
+    --radius-sm: 8px;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overscroll-behavior: none; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+    background-image:
+      radial-gradient(at 20% 0%, rgba(212, 165, 116, 0.04) 0px, transparent 50%),
+      radial-gradient(at 80% 100%, rgba(212, 165, 116, 0.03) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input { font-family: inherit; color: inherit; }
+  .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.02em; }
+
+  /* ---------- Screens ---------- */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: block; }
+
+  /* ---------- Auth ---------- */
+  #auth-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    text-align: center;
+  }
+  #auth-screen.active { display: flex; }
+  .auth-brand {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 56px;
+    font-weight: 400;
+    font-variation-settings: "SOFT" 50, "WONK" 1;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .auth-brand .gold { color: var(--accent); }
+  .auth-tagline {
+    color: var(--text-muted);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+  }
+  .auth-card {
+    width: 100%;
+    max-width: 360px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+  }
+  .auth-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-elevated);
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+  }
+  .auth-tab {
+    flex: 1;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .auth-tab.active { background: var(--bg-card); color: var(--text); }
+
+  .input-group { margin-bottom: 12px; text-align: left; }
+  .input-group label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .input-group input {
+    width: 100%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .input-group input:focus { border-color: var(--accent); }
+
+  .btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #1a1408;
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-secondary:hover { background: var(--bg-hover); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .btn-ghost:hover { color: var(--text); }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0;
+    color: var(--text-dim);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .error-msg {
+    color: var(--red);
+    font-size: 13px;
+    margin-top: 12px;
+    min-height: 18px;
+    text-align: center;
+  }
+
+  /* ---------- Setup ---------- */
+  #setup-screen {
+    padding: 32px 24px;
+  }
+  #setup-screen .auth-brand { margin-bottom: 8px; font-size: 40px; }
+  .setup-container {
+    max-width: 440px;
+    margin: 32px auto 0;
+  }
+  .setup-intro {
+    color: var(--text-muted);
+    margin-bottom: 32px;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* ---------- App ---------- */
+  #app-screen {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px 16px 100px;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px 20px;
+  }
+  .brand-mark {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 22px;
+    font-variation-settings: "SOFT" 50, "WONK" 1;
+    letter-spacing: -0.02em;
+  }
+  .brand-mark .gold { color: var(--accent); }
+  .header-menu {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  /* ---------- Tabs ---------- */
+  .tab-bar {
+    display: flex;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .tab-btn.active {
+    background: var(--bg-elevated);
+    color: var(--text);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ---------- Today tab ---------- */
+  .hero-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -20%;
+    width: 60%; height: 200%;
+    background: radial-gradient(ellipse, rgba(212, 165, 116, 0.06), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .hero-pct {
+    font-family: var(--font-display);
+    font-size: 64px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    margin-bottom: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-pct.positive { color: var(--green); }
+  .hero-pct.negative { color: var(--red); }
+  .hero-pct.neutral { color: var(--text-muted); }
+  .hero-sub {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .hero-sub .num { color: var(--text); }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .stat-value.gain { color: var(--green); }
+  .stat-value.loss { color: var(--red); }
+  .stat-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .action-row .btn { padding: 14px; }
+
+  .section-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 28px 4px 12px;
+  }
+  .section-title h2 {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+  .section-title .meta {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Week summary */
+  .week-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .week-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .week-card-title {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .week-card-pct {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .week-card-pct.gain { background: var(--green-dim); color: var(--green); }
+  .week-card-pct.loss { background: var(--red-dim); color: var(--red); }
+  .week-card-pct.neutral { background: var(--bg-elevated); color: var(--text-muted); }
+
+  .week-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .week-stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .week-stat-value {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .week-stat-value.gain { color: var(--green); }
+  .week-stat-value.loss { color: var(--red); }
+
+  /* Missing alert */
+  .missing-alert {
+    background: var(--amber-dim);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .missing-alert .text { color: var(--amber); }
+  .missing-alert button {
+    color: var(--amber);
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: underline;
+  }
+
+  /* ---------- Calendar tab ---------- */
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding: 0 4px;
+  }
+  .cal-nav-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .cal-nav-btns { display: flex; gap: 8px; }
+  .cal-nav-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .cal-nav-btn:hover { background: var(--bg-hover); }
+
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .cal-weekday {
+    text-align: center;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    padding: 8px 0;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-cell {
+    aspect-ratio: 1 / 1.1;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    padding: 6px 6px 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 11px;
+    overflow: hidden;
+    position: relative;
+  }
+  .cal-cell.outside { opacity: 0.3; }
+  .cal-cell.closed { background: var(--bg-elevated); border-style: dashed; opacity: 0.5; }
+  .cal-cell.before-start { background: var(--bg-elevated); opacity: 0.4; }
+  .cal-cell.future { /* default */ }
+  .cal-cell.past-ahead { border-color: rgba(74, 222, 128, 0.35); background: linear-gradient(180deg, var(--bg-card), rgba(74, 222, 128, 0.05)); }
+  .cal-cell.past-behind { border-color: rgba(248, 113, 113, 0.35); background: linear-gradient(180deg, var(--bg-card), rgba(248, 113, 113, 0.05)); }
+  .cal-cell.past-missing { border-color: rgba(251, 191, 36, 0.35); background: linear-gradient(180deg, var(--bg-card), rgba(251, 191, 36, 0.05)); }
+  .cal-cell.today { border-color: var(--accent); border-width: 2px; }
+
+  .cal-day-num {
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .cal-target {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+  }
+  .cal-actual {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    margin-top: 1px;
+  }
+  .cal-actual.gain { color: var(--green); }
+  .cal-actual.loss { color: var(--red); }
+  .cal-actual.missing { color: var(--amber); }
+
+  .cal-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 0 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .cal-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cal-legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    border: 1px solid;
+  }
+  .cal-legend-dot.ahead { border-color: var(--green); background: rgba(74, 222, 128, 0.15); }
+  .cal-legend-dot.behind { border-color: var(--red); background: rgba(248, 113, 113, 0.15); }
+  .cal-legend-dot.missing { border-color: var(--amber); background: rgba(251, 191, 36, 0.15); }
+  .cal-legend-dot.today { border-color: var(--accent); }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+  .modal-overlay.active { display: flex; }
+  @media (min-width: 600px) { .modal-overlay { align-items: center; } }
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 440px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .modal-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .modal-close {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    color: var(--text-muted);
+    font-size: 18px;
+    line-height: 1;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .modal-actions .btn { flex: 1; }
+
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-label {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .setting-value {
+    font-family: var(--font-mono);
+    font-weight: 500;
+  }
+
+  .input-prefix {
+    position: relative;
+  }
+  .input-prefix::before {
+    content: '$';
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    pointer-events: none;
+  }
+  .input-prefix input { padding-left: 26px; font-family: var(--font-mono); }
+
+  /* Loading */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    color: var(--text-muted);
+  }
+
+  /* Date input dark theme */
+  input[type="date"] {
+    color-scheme: dark;
+  }
+
+  /* History list inside settings */
+  .history-list {
+    margin-top: 8px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-sm);
+    padding: 4px 0;
+  }
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 14px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-item .date {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .history-item .amt {
+    font-family: var(--font-mono);
+    font-weight: 500;
+  }
+
+  /* Offline banner */
+  .offline-banner {
+    background: var(--amber-dim);
+    color: var(--amber);
+    text-align: center;
+    padding: 8px;
+    font-size: 12px;
+    display: none;
+  }
+  .offline-banner.show { display: block; }
+
+  /* Help text */
+  .help-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* Goal history pills in calendar */
+  .goal-pill {
+    display: inline-block;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    margin-left: 8px;
+  }
+  .goal-pill .gold { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="offline-banner" id="offline-banner">offline — changes will sync when you reconnect</div>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div class="screen" id="auth-screen">
+  <div class="auth-brand">Retirement<br><span class="gold display" style="font-style:italic">Gambling</span></div>
+  <div class="auth-tagline">a daily goal tracker</div>
+
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-mode="signin">Sign In</button>
+      <button class="auth-tab" data-mode="signup">Sign Up</button>
+    </div>
+
+    <div class="input-group">
+      <label>Email</label>
+      <input type="email" id="auth-email" autocomplete="email">
+    </div>
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="auth-password" autocomplete="current-password">
+    </div>
+
+    <button class="btn btn-primary" id="auth-submit">Sign In</button>
+
+    <div class="divider">or</div>
+
+    <button class="btn btn-secondary" id="google-signin">
+      <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285f4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34a853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#fbbc05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#ea4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="error-msg" id="auth-error"></div>
+  </div>
+</div>
+
+<!-- ============ SETUP SCREEN ============ -->
+<div class="screen" id="setup-screen">
+  <div style="text-align:center">
+    <div class="auth-brand">Retirement <span class="gold display" style="font-style:italic">Gambling</span></div>
+  </div>
+
+  <div class="setup-container">
+    <p class="setup-intro">
+      Let's set your starting line. You can change any of this later.
+    </p>
+
+    <div class="input-group">
+      <label>Start Date</label>
+      <input type="date" id="setup-start-date">
+      <div class="help-text">The day your goal kicks in. Can be in the past — you can backfill entries.</div>
+    </div>
+
+    <div class="input-group">
+      <label>Starting Account Balance</label>
+      <div class="input-prefix">
+        <input type="number" id="setup-start-balance" step="0.01" placeholder="50000.00">
+      </div>
+      <div class="help-text">Your account balance as of the start date.</div>
+    </div>
+
+    <div class="input-group">
+      <label>Daily Goal</label>
+      <div class="input-prefix">
+        <input type="number" id="setup-daily-goal" step="0.01" placeholder="100.00">
+      </div>
+      <div class="help-text">How much you want to gain per market day.</div>
+    </div>
+
+    <button class="btn btn-primary" id="setup-submit" style="margin-top:8px">Start Gambling Responsibly</button>
+    <div class="error-msg" id="setup-error"></div>
+  </div>
+</div>
+
+<!-- ============ APP SCREEN ============ -->
+<div class="screen" id="app-screen">
+  <div class="header">
+    <div class="brand-mark">Retirement <span class="gold">Gambling</span></div>
+    <button class="header-menu" id="menu-btn" title="Settings">⚙</button>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="today">Today</button>
+    <button class="tab-btn" data-tab="calendar">Outlook</button>
+  </div>
+
+  <!-- TODAY TAB -->
+  <div class="tab-content active" id="tab-today">
+    <div id="missing-alert-container"></div>
+
+    <div class="hero-card">
+      <div class="hero-label">vs. cumulative target</div>
+      <div class="hero-pct" id="hero-pct">—</div>
+      <div class="hero-sub" id="hero-sub">—</div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Current Balance</div>
+        <div class="stat-value num" id="stat-balance">—</div>
+        <div class="stat-sub" id="stat-balance-sub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Target Today</div>
+        <div class="stat-value num" id="stat-target">—</div>
+        <div class="stat-sub" id="stat-target-sub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Cumulative Gain</div>
+        <div class="stat-value num" id="stat-gain">—</div>
+        <div class="stat-sub" id="stat-gain-sub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Trading Days</div>
+        <div class="stat-value num" id="stat-days">—</div>
+        <div class="stat-sub" id="stat-days-sub">—</div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-primary" id="update-balance-btn">Update Today's Balance</button>
+    </div>
+
+    <div class="section-title">
+      <h2>Weekly Pulse</h2>
+    </div>
+    <div id="weeks-container"></div>
+  </div>
+
+  <!-- CALENDAR TAB -->
+  <div class="tab-content" id="tab-calendar">
+    <div class="cal-nav">
+      <div class="cal-nav-title" id="cal-title">—</div>
+      <div class="cal-nav-btns">
+        <button class="cal-nav-btn" id="cal-prev">‹</button>
+        <button class="cal-nav-btn" id="cal-today">•</button>
+        <button class="cal-nav-btn" id="cal-next">›</button>
+      </div>
+    </div>
+
+    <div class="cal-weekdays">
+      <div class="cal-weekday">Sun</div>
+      <div class="cal-weekday">Mon</div>
+      <div class="cal-weekday">Tue</div>
+      <div class="cal-weekday">Wed</div>
+      <div class="cal-weekday">Thu</div>
+      <div class="cal-weekday">Fri</div>
+      <div class="cal-weekday">Sat</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-legend-dot today"></div>Today</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot ahead"></div>Ahead</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot behind"></div>Behind</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot missing"></div>Missing entry</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BALANCE MODAL ============ -->
+<div class="modal-overlay" id="balance-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="balance-modal-title">Update Balance</div>
+      <button class="modal-close" data-close-modal="balance-modal">×</button>
+    </div>
+    <div class="input-group">
+      <label>Date</label>
+      <input type="date" id="balance-date">
+    </div>
+    <div class="input-group">
+      <label>Account Balance</label>
+      <div class="input-prefix">
+        <input type="number" id="balance-amount" step="0.01">
+      </div>
+      <div class="help-text" id="balance-help"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="balance-delete" style="display:none">Delete</button>
+      <button class="btn btn-primary" id="balance-save">Save</button>
+    </div>
+    <div class="error-msg" id="balance-error"></div>
+  </div>
+</div>
+
+<!-- ============ SETTINGS MODAL ============ -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Settings</div>
+      <button class="modal-close" data-close-modal="settings-modal">×</button>
+    </div>
+
+    <div class="setting-row">
+      <span class="setting-label">Start Date</span>
+      <span class="setting-value num" id="settings-start-date">—</span>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">Starting Balance</span>
+      <span class="setting-value num" id="settings-start-balance">—</span>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">Current Daily Goal</span>
+      <span class="setting-value num" id="settings-current-goal">—</span>
+    </div>
+
+    <button class="btn btn-secondary" id="change-goal-btn" style="margin-top:16px">Change Daily Goal</button>
+    <button class="btn btn-secondary" id="edit-start-btn" style="margin-top:8px">Edit Start Date / Balance</button>
+
+    <div style="margin-top:24px">
+      <div class="stat-label" style="margin-bottom:8px">Goal History</div>
+      <div class="history-list" id="goal-history-list"></div>
+    </div>
+
+    <div style="margin-top:24px">
+      <div class="stat-label" style="margin-bottom:8px">Account</div>
+      <div class="setting-row">
+        <span class="setting-label" id="settings-email">—</span>
+        <button class="btn-ghost" id="signout-btn" style="padding:4px 8px">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CHANGE GOAL MODAL ============ -->
+<div class="modal-overlay" id="goal-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Change Daily Goal</div>
+      <button class="modal-close" data-close-modal="goal-modal">×</button>
+    </div>
+    <div class="input-group">
+      <label>Effective Date</label>
+      <input type="date" id="goal-effective-date">
+      <div class="help-text">The goal change applies from this date forward. Previous cumulative target stays unchanged.</div>
+    </div>
+    <div class="input-group">
+      <label>New Daily Goal</label>
+      <div class="input-prefix">
+        <input type="number" id="goal-new-amount" step="0.01">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" data-close-modal="goal-modal">Cancel</button>
+      <button class="btn btn-primary" id="goal-save">Save Change</button>
+    </div>
+    <div class="error-msg" id="goal-error"></div>
+  </div>
+</div>
+
+<!-- ============ EDIT START MODAL ============ -->
+<div class="modal-overlay" id="start-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Edit Start</div>
+      <button class="modal-close" data-close-modal="start-modal">×</button>
+    </div>
+    <div class="input-group">
+      <label>Start Date</label>
+      <input type="date" id="edit-start-date">
+    </div>
+    <div class="input-group">
+      <label>Starting Balance</label>
+      <div class="input-prefix">
+        <input type="number" id="edit-start-balance" step="0.01">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" data-close-modal="start-modal">Cancel</button>
+      <button class="btn btn-primary" id="start-save">Save</button>
+    </div>
+    <div class="error-msg" id="start-error"></div>
+  </div>
+</div>
+
+<div class="loading" id="loading">Loading…</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  collection,
+  onSnapshot,
+  enableIndexedDbPersistence,
+  serverTimestamp,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import { firebaseConfig } from "./firebase-config.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Offline persistence (best-effort; can fail in multiple tabs)
+enableIndexedDbPersistence(db).catch(() => {});
+
+/* ===================================================================
+   NYSE Market Calendar — hardcoded rules, computed algorithmically
+   =================================================================== */
+
+// Easter via Meeus/Jones/Butcher
+function easter(year) {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+function goodFriday(year) {
+  const e = easter(year);
+  const d = new Date(e); d.setDate(d.getDate() - 2);
+  return d;
+}
+function nthWeekday(year, month, weekday, n) {
+  const first = new Date(year, month, 1);
+  const offset = (weekday - first.getDay() + 7) % 7;
+  return new Date(year, month, 1 + offset + (n - 1) * 7);
+}
+function lastWeekday(year, month, weekday) {
+  const last = new Date(year, month + 1, 0);
+  const offset = (last.getDay() - weekday + 7) % 7;
+  return new Date(year, month, last.getDate() - offset);
+}
+function observedHoliday(year, month, day) {
+  const d = new Date(year, month, day);
+  if (d.getDay() === 0) d.setDate(d.getDate() + 1); // Sun -> Mon
+  if (d.getDay() === 6) d.setDate(d.getDate() - 1); // Sat -> Fri
+  return d;
+}
+
+// Cache per year
+const holidayCache = new Map();
+function marketHolidays(year) {
+  if (holidayCache.has(year)) return holidayCache.get(year);
+  const list = [
+    observedHoliday(year, 0, 1),       // New Year's
+    nthWeekday(year, 0, 1, 3),         // MLK Day - 3rd Mon Jan
+    nthWeekday(year, 1, 1, 3),         // Presidents' Day - 3rd Mon Feb
+    goodFriday(year),                  // Good Friday
+    lastWeekday(year, 4, 1),           // Memorial Day - last Mon May
+    nthWeekday(year, 8, 1, 1),         // Labor Day - 1st Mon Sep
+    nthWeekday(year, 10, 4, 4),        // Thanksgiving - 4th Thu Nov
+    observedHoliday(year, 6, 4),       // Independence Day
+    observedHoliday(year, 11, 25),     // Christmas
+  ];
+  if (year >= 2022) list.push(observedHoliday(year, 5, 19)); // Juneteenth
+  const set = new Set(list.map(d => ymd(d)));
+  holidayCache.set(year, set);
+  return set;
+}
+function isMarketHoliday(date) {
+  return marketHolidays(date.getFullYear()).has(ymd(date));
+}
+function isMarketOpen(date) {
+  const day = date.getDay();
+  if (day === 0 || day === 6) return false;
+  return !isMarketHoliday(date);
+}
+
+/* ===================================================================
+   Date helpers — all in local time
+   =================================================================== */
+
+function ymd(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function parseYmd(s) {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function todayLocal() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+function addDays(d, n) {
+  const r = new Date(d);
+  r.setDate(r.getDate() + n);
+  return r;
+}
+function fmtMoney(n) {
+  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtMoneySigned(n) {
+  const s = n >= 0 ? '+' : '−';
+  return `${s}$${fmtMoney(Math.abs(n))}`;
+}
+function fmtDate(d) {
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+/* ===================================================================
+   Goal math
+   =================================================================== */
+
+// goalHistory: [{effectiveDate: 'YYYY-MM-DD', dailyGoal: number}], sorted ascending
+function goalOn(date, goalHistory) {
+  let g = goalHistory[0].dailyGoal;
+  const key = ymd(date);
+  for (const change of goalHistory) {
+    if (change.effectiveDate <= key) g = change.dailyGoal;
+    else break;
+  }
+  return g;
+}
+
+// Cumulative target gain through and including the given date (only counts market days from start through date)
+function cumulativeTargetGain(date, startDate, goalHistory) {
+  const dateKey = ymd(date);
+  const startKey = ymd(startDate);
+  if (dateKey < startKey) return 0;
+  let total = 0;
+  const cur = new Date(startDate);
+  cur.setHours(0, 0, 0, 0);
+  const end = new Date(date);
+  end.setHours(0, 0, 0, 0);
+  while (cur <= end) {
+    if (isMarketOpen(cur)) {
+      total += goalOn(cur, goalHistory);
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+  return total;
+}
+
+// Number of trading days from start through date (inclusive)
+function tradingDaysThrough(date, startDate) {
+  const dateKey = ymd(date);
+  const startKey = ymd(startDate);
+  if (dateKey < startKey) return 0;
+  let n = 0;
+  const cur = new Date(startDate);
+  cur.setHours(0, 0, 0, 0);
+  const end = new Date(date);
+  end.setHours(0, 0, 0, 0);
+  while (cur <= end) {
+    if (isMarketOpen(cur)) n++;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return n;
+}
+
+/* ===================================================================
+   App state
+   =================================================================== */
+
+const state = {
+  user: null,
+  userDoc: null,        // { startDate, startingBalance, goalHistory: [...] }
+  balances: {},         // { 'YYYY-MM-DD': number }
+  calMonth: null,       // Date pointing to first of viewed month
+  unsubBalances: null,
+};
+
+/* ===================================================================
+   UI helpers
+   =================================================================== */
+
+const $ = (id) => document.getElementById(id);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(name).classList.add('active');
+  $('loading').style.display = 'none';
+}
+function openModal(id) { $(id).classList.add('active'); }
+function closeModal(id) { $(id).classList.remove('active'); }
+
+document.querySelectorAll('[data-close-modal]').forEach(btn => {
+  btn.addEventListener('click', () => closeModal(btn.dataset.closeModal));
+});
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('active');
+  });
+});
+
+/* ===================================================================
+   Auth flow
+   =================================================================== */
+
+let authMode = 'signin';
+document.querySelectorAll('.auth-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    authMode = tab.dataset.mode;
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    $('auth-submit').textContent = authMode === 'signin' ? 'Sign In' : 'Create Account';
+    $('auth-error').textContent = '';
+  });
+});
+
+$('auth-submit').addEventListener('click', async () => {
+  const email = $('auth-email').value.trim();
+  const password = $('auth-password').value;
+  $('auth-error').textContent = '';
+  if (!email || !password) { $('auth-error').textContent = 'Email and password required.'; return; }
+  try {
+    if (authMode === 'signin') {
+      await signInWithEmailAndPassword(auth, email, password);
+    } else {
+      await createUserWithEmailAndPassword(auth, email, password);
+    }
+  } catch (err) {
+    $('auth-error').textContent = friendlyAuthError(err);
+  }
+});
+
+$('google-signin').addEventListener('click', async () => {
+  $('auth-error').textContent = '';
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  } catch (err) {
+    $('auth-error').textContent = friendlyAuthError(err);
+  }
+});
+
+function friendlyAuthError(err) {
+  const code = err.code || '';
+  const map = {
+    'auth/invalid-email': 'Invalid email.',
+    'auth/user-not-found': 'No account with that email.',
+    'auth/wrong-password': 'Incorrect password.',
+    'auth/invalid-credential': 'Email or password is wrong.',
+    'auth/email-already-in-use': 'An account with that email already exists.',
+    'auth/weak-password': 'Password should be at least 6 characters.',
+    'auth/popup-closed-by-user': 'Sign-in cancelled.',
+  };
+  return map[code] || err.message || 'Something went wrong.';
+}
+
+/* ===================================================================
+   Auth state listener
+   =================================================================== */
+
+onAuthStateChanged(auth, async (user) => {
+  if (state.unsubBalances) { state.unsubBalances(); state.unsubBalances = null; }
+  state.balances = {};
+
+  if (!user) {
+    state.user = null;
+    state.userDoc = null;
+    showScreen('auth-screen');
+    return;
+  }
+  state.user = user;
+  $('settings-email').textContent = user.email || '(google account)';
+
+  // Load user doc
+  const userRef = doc(db, 'users', user.uid);
+  const snap = await getDoc(userRef);
+  if (!snap.exists() || !snap.data().startDate) {
+    // First-time setup
+    $('setup-start-date').value = ymd(todayLocal());
+    showScreen('setup-screen');
+    return;
+  }
+  state.userDoc = snap.data();
+
+  // Subscribe to balances subcollection
+  const balRef = collection(db, 'users', user.uid, 'balances');
+  state.unsubBalances = onSnapshot(balRef, (qs) => {
+    const balances = {};
+    qs.forEach(d => { balances[d.id] = d.data().balance; });
+    state.balances = balances;
+    renderApp();
+  });
+
+  showScreen('app-screen');
+  state.calMonth = startOfMonth(todayLocal());
+  renderApp();
+});
+
+/* ===================================================================
+   Setup flow
+   =================================================================== */
+
+$('setup-submit').addEventListener('click', async () => {
+  const startDate = $('setup-start-date').value;
+  const startBalance = parseFloat($('setup-start-balance').value);
+  const dailyGoal = parseFloat($('setup-daily-goal').value);
+  $('setup-error').textContent = '';
+  if (!startDate || isNaN(startBalance) || isNaN(dailyGoal)) {
+    $('setup-error').textContent = 'All fields are required.'; return;
+  }
+  if (dailyGoal <= 0) {
+    $('setup-error').textContent = 'Daily goal must be positive.'; return;
+  }
+  try {
+    const userRef = doc(db, 'users', state.user.uid);
+    await setDoc(userRef, {
+      startDate,
+      startingBalance: startBalance,
+      goalHistory: [{ effectiveDate: startDate, dailyGoal }],
+      createdAt: serverTimestamp(),
+    });
+    state.userDoc = { startDate, startingBalance: startBalance, goalHistory: [{ effectiveDate: startDate, dailyGoal }] };
+
+    // Subscribe and continue
+    const balRef = collection(db, 'users', state.user.uid, 'balances');
+    state.unsubBalances = onSnapshot(balRef, (qs) => {
+      const balances = {};
+      qs.forEach(d => { balances[d.id] = d.data().balance; });
+      state.balances = balances;
+      renderApp();
+    });
+
+    showScreen('app-screen');
+    state.calMonth = startOfMonth(todayLocal());
+    renderApp();
+  } catch (err) {
+    $('setup-error').textContent = err.message;
+  }
+});
+
+/* ===================================================================
+   Tabs
+   =================================================================== */
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    $(`tab-${btn.dataset.tab}`).classList.add('active');
+  });
+});
+
+/* ===================================================================
+   Settings & menu
+   =================================================================== */
+
+$('menu-btn').addEventListener('click', () => {
+  renderSettings();
+  openModal('settings-modal');
+});
+
+$('signout-btn').addEventListener('click', async () => {
+  await signOut(auth);
+  closeModal('settings-modal');
+});
+
+function renderSettings() {
+  if (!state.userDoc) return;
+  $('settings-start-date').textContent = fmtDate(parseYmd(state.userDoc.startDate));
+  $('settings-start-balance').textContent = `$${fmtMoney(state.userDoc.startingBalance)}`;
+  const currentGoal = goalOn(todayLocal(), state.userDoc.goalHistory);
+  $('settings-current-goal').textContent = `$${fmtMoney(currentGoal)}/day`;
+
+  // Goal history
+  const list = $('goal-history-list');
+  list.innerHTML = '';
+  state.userDoc.goalHistory.forEach(g => {
+    const row = document.createElement('div');
+    row.className = 'history-item';
+    row.innerHTML = `
+      <span class="date">${fmtDate(parseYmd(g.effectiveDate))}</span>
+      <span class="amt">$${fmtMoney(g.dailyGoal)}/day</span>
+    `;
+    list.appendChild(row);
+  });
+}
+
+$('change-goal-btn').addEventListener('click', () => {
+  closeModal('settings-modal');
+  $('goal-effective-date').value = ymd(todayLocal());
+  $('goal-new-amount').value = '';
+  $('goal-error').textContent = '';
+  openModal('goal-modal');
+});
+
+$('goal-save').addEventListener('click', async () => {
+  const effectiveDate = $('goal-effective-date').value;
+  const amount = parseFloat($('goal-new-amount').value);
+  $('goal-error').textContent = '';
+  if (!effectiveDate || isNaN(amount) || amount <= 0) {
+    $('goal-error').textContent = 'Provide a date and a positive amount.'; return;
+  }
+  if (effectiveDate < state.userDoc.startDate) {
+    $('goal-error').textContent = 'Cannot be before start date.'; return;
+  }
+  // Merge into goalHistory
+  let history = [...state.userDoc.goalHistory];
+  history = history.filter(h => h.effectiveDate !== effectiveDate);
+  history.push({ effectiveDate, dailyGoal: amount });
+  history.sort((a, b) => a.effectiveDate.localeCompare(b.effectiveDate));
+  try {
+    const userRef = doc(db, 'users', state.user.uid);
+    await updateDoc(userRef, { goalHistory: history });
+    state.userDoc.goalHistory = history;
+    closeModal('goal-modal');
+    renderApp();
+  } catch (err) {
+    $('goal-error').textContent = err.message;
+  }
+});
+
+$('edit-start-btn').addEventListener('click', () => {
+  closeModal('settings-modal');
+  $('edit-start-date').value = state.userDoc.startDate;
+  $('edit-start-balance').value = state.userDoc.startingBalance;
+  $('start-error').textContent = '';
+  openModal('start-modal');
+});
+
+$('start-save').addEventListener('click', async () => {
+  const newDate = $('edit-start-date').value;
+  const newBal = parseFloat($('edit-start-balance').value);
+  $('start-error').textContent = '';
+  if (!newDate || isNaN(newBal)) { $('start-error').textContent = 'Both fields required.'; return; }
+  // Update goalHistory's first entry effectiveDate to match new start
+  const history = [...state.userDoc.goalHistory];
+  history.sort((a, b) => a.effectiveDate.localeCompare(b.effectiveDate));
+  if (history[0].effectiveDate > newDate) history[0].effectiveDate = newDate;
+  try {
+    const userRef = doc(db, 'users', state.user.uid);
+    await updateDoc(userRef, { startDate: newDate, startingBalance: newBal, goalHistory: history });
+    state.userDoc.startDate = newDate;
+    state.userDoc.startingBalance = newBal;
+    state.userDoc.goalHistory = history;
+    closeModal('start-modal');
+    renderApp();
+  } catch (err) {
+    $('start-error').textContent = err.message;
+  }
+});
+
+/* ===================================================================
+   Balance entry
+   =================================================================== */
+
+$('update-balance-btn').addEventListener('click', () => {
+  openBalanceModal(todayLocal());
+});
+
+function openBalanceModal(date) {
+  const key = ymd(date);
+  $('balance-date').value = key;
+  $('balance-amount').value = state.balances[key] != null ? state.balances[key] : '';
+  $('balance-error').textContent = '';
+  $('balance-modal-title').textContent = ymd(date) === ymd(todayLocal()) ? 'Update Balance' : 'Edit Balance';
+  $('balance-delete').style.display = state.balances[key] != null ? 'block' : 'none';
+
+  // Help text
+  if (!isMarketOpen(date)) {
+    $('balance-help').textContent = 'Note: market is closed on this date. Saving anyway is allowed.';
+  } else {
+    $('balance-help').textContent = '';
+  }
+
+  openModal('balance-modal');
+}
+
+$('balance-save').addEventListener('click', async () => {
+  const date = $('balance-date').value;
+  const amount = parseFloat($('balance-amount').value);
+  $('balance-error').textContent = '';
+  if (!date || isNaN(amount)) { $('balance-error').textContent = 'Date and amount required.'; return; }
+  if (date < state.userDoc.startDate) {
+    $('balance-error').textContent = 'Cannot be before start date.'; return;
+  }
+  try {
+    const balRef = doc(db, 'users', state.user.uid, 'balances', date);
+    await setDoc(balRef, { balance: amount, updatedAt: serverTimestamp() });
+    state.balances[date] = amount;
+    closeModal('balance-modal');
+    renderApp();
+  } catch (err) {
+    $('balance-error').textContent = err.message;
+  }
+});
+
+$('balance-delete').addEventListener('click', async () => {
+  const date = $('balance-date').value;
+  if (!confirm('Delete this entry?')) return;
+  try {
+    const balRef = doc(db, 'users', state.user.uid, 'balances', date);
+    await deleteDoc(balRef);
+    delete state.balances[date];
+    closeModal('balance-modal');
+    renderApp();
+  } catch (err) {
+    $('balance-error').textContent = err.message;
+  }
+});
+
+/* ===================================================================
+   Rendering
+   =================================================================== */
+
+function renderApp() {
+  if (!state.userDoc) return;
+  renderToday();
+  renderCalendar();
+}
+
+// Compute "most recent known balance on or before the given date"
+function effectiveBalanceOn(date) {
+  const startKey = state.userDoc.startDate;
+  const targetKey = ymd(date);
+  if (targetKey < startKey) return null;
+  // Iterate back from target until we find an entry, or reach start
+  let cur = new Date(date);
+  cur.setHours(0, 0, 0, 0);
+  const start = parseYmd(startKey);
+  start.setHours(0, 0, 0, 0);
+  while (cur >= start) {
+    const k = ymd(cur);
+    if (state.balances[k] != null) return state.balances[k];
+    cur.setDate(cur.getDate() - 1);
+  }
+  // No entries yet — fall back to starting balance
+  return state.userDoc.startingBalance;
+}
+
+function renderToday() {
+  const today = todayLocal();
+  const startDate = parseYmd(state.userDoc.startDate);
+
+  // If today is before start date, show "not started" state
+  if (today < startDate) {
+    $('hero-pct').textContent = '—';
+    $('hero-pct').className = 'hero-pct neutral';
+    $('hero-sub').textContent = `Goal starts ${fmtDate(startDate)}`;
+    $('stat-balance').textContent = `$${fmtMoney(state.userDoc.startingBalance)}`;
+    $('stat-target').textContent = `$${fmtMoney(state.userDoc.startingBalance)}`;
+    $('stat-gain').textContent = '$0.00';
+    $('stat-days').textContent = '0';
+    $('stat-balance-sub').textContent = 'starting balance';
+    $('stat-target-sub').textContent = 'not yet started';
+    $('stat-gain-sub').textContent = '—';
+    $('stat-days-sub').textContent = 'until start';
+    $('weeks-container').innerHTML = '';
+    $('missing-alert-container').innerHTML = '';
+    return;
+  }
+
+  const targetGain = cumulativeTargetGain(today, startDate, state.userDoc.goalHistory);
+  const targetBalance = state.userDoc.startingBalance + targetGain;
+  const currentBalance = effectiveBalanceOn(today);
+  const actualGain = currentBalance - state.userDoc.startingBalance;
+  const diff = actualGain - targetGain;
+  const tradingDays = tradingDaysThrough(today, startDate);
+
+  // Hero %: of cumulative gain target
+  let pctText = '—', pctClass = 'neutral';
+  if (targetGain > 0) {
+    const pct = (diff / targetGain) * 100;
+    pctText = `${pct >= 0 ? '+' : '−'}${Math.abs(pct).toFixed(1)}%`;
+    pctClass = pct > 0.05 ? 'positive' : pct < -0.05 ? 'negative' : 'neutral';
+  } else if (tradingDays === 0) {
+    pctText = '—';
+    pctClass = 'neutral';
+  }
+  $('hero-pct').textContent = pctText;
+  $('hero-pct').className = `hero-pct ${pctClass}`;
+
+  const subBits = [];
+  subBits.push(`<span class="num">${fmtMoneySigned(diff)}</span> ${diff >= 0 ? 'ahead of' : 'behind'} target`);
+  $('hero-sub').innerHTML = subBits.join('');
+
+  $('stat-balance').textContent = `$${fmtMoney(currentBalance)}`;
+  $('stat-balance-sub').textContent = state.balances[ymd(today)] != null ? 'logged today' : 'last known';
+  $('stat-target').textContent = `$${fmtMoney(targetBalance)}`;
+  $('stat-target-sub').textContent = `target gain $${fmtMoney(targetGain)}`;
+  $('stat-gain').textContent = fmtMoneySigned(actualGain);
+  $('stat-gain').className = `stat-value num ${actualGain >= 0 ? 'gain' : 'loss'}`;
+  $('stat-gain-sub').textContent = `since ${fmtDate(startDate)}`;
+  $('stat-days').textContent = tradingDays;
+  $('stat-days-sub').textContent = `market days elapsed`;
+
+  // Missing entries alert (only count past market days, excluding today)
+  const missing = countMissingEntries();
+  const container = $('missing-alert-container');
+  if (missing.length > 0) {
+    container.innerHTML = `
+      <div class="missing-alert">
+        <span class="text">${missing.length} market day${missing.length === 1 ? '' : 's'} missing balance entr${missing.length === 1 ? 'y' : 'ies'}</span>
+        <button id="goto-missing">Fix</button>
+      </div>
+    `;
+    $('goto-missing').addEventListener('click', () => openBalanceModal(parseYmd(missing[0])));
+  } else {
+    container.innerHTML = '';
+  }
+
+  renderWeeks();
+}
+
+function countMissingEntries() {
+  const today = todayLocal();
+  const startDate = parseYmd(state.userDoc.startDate);
+  const missing = [];
+  const cur = new Date(startDate);
+  while (cur < today) {  // past market days only
+    if (isMarketOpen(cur) && state.balances[ymd(cur)] == null) {
+      missing.push(ymd(cur));
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+  return missing;
+}
+
+function startOfWeek(d) {
+  // Week starts Sunday
+  const r = new Date(d);
+  r.setHours(0, 0, 0, 0);
+  r.setDate(r.getDate() - r.getDay());
+  return r;
+}
+
+function renderWeeks() {
+  const today = todayLocal();
+  const thisWeekStart = startOfWeek(today);
+  const lastWeekStart = addDays(thisWeekStart, -7);
+
+  const html = [
+    renderWeekCard(lastWeekStart, 'Last Week'),
+    renderWeekCard(thisWeekStart, 'This Week'),
+  ].join('');
+  $('weeks-container').innerHTML = html;
+}
+
+function renderWeekCard(weekStart, label) {
+  const startDate = parseYmd(state.userDoc.startDate);
+  const today = todayLocal();
+  const weekEnd = addDays(weekStart, 6);
+
+  // Find Friday of this week (last possible market day) or today, whichever is earlier
+  const cap = today < weekEnd ? today : weekEnd;
+
+  // Find balance at start of week period (last entry on or before day before weekStart, but not before startDate)
+  const dayBeforeWeek = addDays(weekStart, -1);
+  let weekStartBalance;
+  if (dayBeforeWeek < startDate) {
+    weekStartBalance = state.userDoc.startingBalance;
+  } else {
+    weekStartBalance = effectiveBalanceOn(dayBeforeWeek);
+  }
+
+  // Balance at end of week period
+  const weekEndBalance = cap >= startDate ? effectiveBalanceOn(cap) : weekStartBalance;
+  const weekPL = weekEndBalance - weekStartBalance;
+
+  // Compute target for the week (sum of daily goals on market days in [weekStart..cap] that are >= startDate)
+  let weekTarget = 0;
+  const cur = new Date(weekStart);
+  while (cur <= cap) {
+    if (cur >= startDate && isMarketOpen(cur)) {
+      weekTarget += goalOn(cur, state.userDoc.goalHistory);
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  const diff = weekPL - weekTarget;
+  let pctText = '—', pctClass = 'neutral';
+  if (weekTarget > 0) {
+    const pct = (diff / weekTarget) * 100;
+    pctText = `${pct >= 0 ? '+' : '−'}${Math.abs(pct).toFixed(1)}%`;
+    pctClass = pct > 0.05 ? 'gain' : pct < -0.05 ? 'loss' : 'neutral';
+  }
+
+  return `
+    <div class="week-card">
+      <div class="week-card-head">
+        <span class="week-card-title">${label}</span>
+        <span class="week-card-pct ${pctClass}">${pctText}</span>
+      </div>
+      <div class="week-stats">
+        <div>
+          <div class="week-stat-label">P / L</div>
+          <div class="week-stat-value ${weekPL >= 0 ? 'gain' : 'loss'}">${fmtMoneySigned(weekPL)}</div>
+        </div>
+        <div>
+          <div class="week-stat-label">Goal</div>
+          <div class="week-stat-value">$${fmtMoney(weekTarget)}</div>
+        </div>
+        <div>
+          <div class="week-stat-label">vs Target</div>
+          <div class="week-stat-value ${diff >= 0 ? 'gain' : 'loss'}">${fmtMoneySigned(diff)}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ===================================================================
+   Calendar
+   =================================================================== */
+
+function startOfMonth(d) {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+
+$('cal-prev').addEventListener('click', () => {
+  state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth() - 1, 1);
+  renderCalendar();
+});
+$('cal-next').addEventListener('click', () => {
+  state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth() + 1, 1);
+  renderCalendar();
+});
+$('cal-today').addEventListener('click', () => {
+  state.calMonth = startOfMonth(todayLocal());
+  renderCalendar();
+});
+
+function renderCalendar() {
+  if (!state.calMonth) return;
+  const month = state.calMonth;
+  const year = month.getFullYear();
+  const monthIdx = month.getMonth();
+  const today = todayLocal();
+  const startDate = parseYmd(state.userDoc.startDate);
+
+  $('cal-title').textContent = month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  // Compute first day to display (start of week containing day 1)
+  const firstOfMonth = new Date(year, monthIdx, 1);
+  const gridStart = startOfWeek(firstOfMonth);
+  const lastOfMonth = new Date(year, monthIdx + 1, 0);
+  const gridEnd = addDays(startOfWeek(lastOfMonth), 6);
+
+  const grid = $('cal-grid');
+  grid.innerHTML = '';
+
+  // Compute cumulative target gain through (gridStart - 1) once. Then increment
+  // as we walk forward — avoids re-iterating from startDate for every cell.
+  let runningTarget = 0;
+  if (gridStart > startDate) {
+    const dayBefore = addDays(gridStart, -1);
+    runningTarget = cumulativeTargetGain(dayBefore, startDate, state.userDoc.goalHistory);
+  }
+
+  const cur = new Date(gridStart);
+  while (cur <= gridEnd) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell';
+
+    const inMonth = cur.getMonth() === monthIdx;
+    const dayKey = ymd(cur);
+    const isToday = dayKey === ymd(today);
+    const open = isMarketOpen(cur);
+    const beforeStart = cur < startDate;
+
+    if (!inMonth) cell.classList.add('outside');
+    if (!open) cell.classList.add('closed');
+    if (beforeStart && open) cell.classList.add('before-start');
+    if (isToday) cell.classList.add('today');
+
+    const dayNum = document.createElement('div');
+    dayNum.className = 'cal-day-num';
+    dayNum.textContent = cur.getDate();
+    cell.appendChild(dayNum);
+
+    // Increment running target if this is a market day on/after start
+    if (open && !beforeStart) {
+      runningTarget += goalOn(cur, state.userDoc.goalHistory);
+    }
+
+    if (open && !beforeStart) {
+      const targetGain = runningTarget;
+      const targetBal = state.userDoc.startingBalance + targetGain;
+
+      const t = document.createElement('div');
+      t.className = 'cal-target';
+      t.textContent = `$${fmtCompact(targetBal)}`;
+      cell.appendChild(t);
+
+      // Past day: show actual or missing flag
+      if (cur < today) {
+        const actual = state.balances[dayKey];
+        if (actual != null) {
+          const a = document.createElement('div');
+          a.className = 'cal-actual';
+          const diff = actual - targetBal;
+          a.classList.add(diff >= 0 ? 'gain' : 'loss');
+          a.textContent = (diff >= 0 ? '+' : '−') + fmtCompact(Math.abs(diff));
+          cell.appendChild(a);
+          cell.classList.add(diff >= 0 ? 'past-ahead' : 'past-behind');
+        } else {
+          const a = document.createElement('div');
+          a.className = 'cal-actual missing';
+          a.textContent = '— missing';
+          cell.appendChild(a);
+          cell.classList.add('past-missing');
+        }
+      }
+    }
+
+    // Click handler — open balance modal if it's a market day on/after start
+    if (open && !beforeStart) {
+      const clickDate = new Date(cur);
+      cell.style.cursor = 'pointer';
+      cell.addEventListener('click', () => openBalanceModal(clickDate));
+    }
+
+    grid.appendChild(cell);
+    cur.setDate(cur.getDate() + 1);
+  }
+}
+
+// Compact money format for tight cells: $50.7k, $1.2k, $250
+function fmtCompact(n) {
+  const abs = Math.abs(n);
+  if (abs >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (abs >= 10000) return (n / 1000).toFixed(0) + 'k';
+  if (abs >= 1000) return (n / 1000).toFixed(1) + 'k';
+  return n.toFixed(0);
+}
+
+/* ===================================================================
+   Online/offline banner
+   =================================================================== */
+
+function updateOnlineBanner() {
+  $('offline-banner').classList.toggle('show', !navigator.onLine);
+}
+window.addEventListener('online', updateOnlineBanner);
+window.addEventListener('offline', updateOnlineBanner);
+updateOnlineBanner();
+
+/* ===================================================================
+   Service worker
+   =================================================================== */
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
