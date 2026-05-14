@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Retirement Gambling</title>
+<title>Roth IRA Tracker</title>
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="RG">
+<meta name="apple-mobile-web-app-title" content="Roth IRA">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
@@ -739,7 +739,7 @@
 
 <!-- ============ AUTH SCREEN ============ -->
 <div class="screen" id="auth-screen">
-  <div class="auth-brand">Retirement<br><span class="gold display" style="font-style:italic">Gambling</span></div>
+  <div class="auth-brand">Roth IRA<br><span class="gold display" style="font-style:italic">Tracker</span></div>
   <div class="auth-tagline">a daily goal tracker</div>
 
   <div class="auth-card">
@@ -773,7 +773,7 @@
 <!-- ============ SETUP SCREEN ============ -->
 <div class="screen" id="setup-screen">
   <div style="text-align:center">
-    <div class="auth-brand">Retirement <span class="gold display" style="font-style:italic">Gambling</span></div>
+    <div class="auth-brand">Roth IRA <span class="gold display" style="font-style:italic">Tracker</span></div>
   </div>
 
   <div class="setup-container">
@@ -803,7 +803,7 @@
       <div class="help-text">How much you want to gain per market day.</div>
     </div>
 
-    <button class="btn btn-primary" id="setup-submit" style="margin-top:8px">Start Gambling Responsibly</button>
+    <button class="btn btn-primary" id="setup-submit" style="margin-top:8px">Start Tracking</button>
     <div class="error-msg" id="setup-error"></div>
   </div>
 </div>
@@ -811,7 +811,7 @@
 <!-- ============ APP SCREEN ============ -->
 <div class="screen" id="app-screen">
   <div class="header">
-    <div class="brand-mark">Retirement <span class="gold">Gambling</span></div>
+    <div class="brand-mark">Roth IRA <span class="gold">Tracker</span></div>
     <button class="header-menu" id="menu-btn" title="Settings">⚙</button>
   </div>
 
@@ -825,26 +825,26 @@
     <div id="missing-alert-container"></div>
 
     <div class="hero-card">
-      <div class="hero-label">vs. cumulative target</div>
-      <div class="hero-pct" id="hero-pct">—</div>
+      <div class="hero-label">current balance</div>
+      <div class="hero-pct" id="hero-balance">—</div>
       <div class="hero-sub" id="hero-sub">—</div>
     </div>
 
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-label">Current Balance</div>
-        <div class="stat-value num" id="stat-balance">—</div>
-        <div class="stat-sub" id="stat-balance-sub">—</div>
+        <div class="stat-label">Cumulative Gain</div>
+        <div class="stat-value num" id="stat-gain">—</div>
+        <div class="stat-sub" id="stat-gain-sub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">vs Target</div>
+        <div class="stat-value num" id="stat-pct">—</div>
+        <div class="stat-sub" id="stat-pct-sub">—</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Target Today</div>
         <div class="stat-value num" id="stat-target">—</div>
         <div class="stat-sub" id="stat-target-sub">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Cumulative Gain</div>
-        <div class="stat-value num" id="stat-gain">—</div>
-        <div class="stat-sub" id="stat-gain-sub">—</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Trading Days</div>
@@ -1585,16 +1585,18 @@ function renderToday() {
 
   // If today is before start date, show "not started" state
   if (today < startDate) {
-    $('hero-pct').textContent = '—';
-    $('hero-pct').className = 'hero-pct neutral';
+    $('hero-balance').textContent = `$${fmtMoney(state.userDoc.startingBalance)}`;
+    $('hero-balance').className = 'hero-pct';
     $('hero-sub').textContent = `Goal starts ${fmtDate(startDate)}`;
-    $('stat-balance').textContent = `$${fmtMoney(state.userDoc.startingBalance)}`;
-    $('stat-target').textContent = `$${fmtMoney(state.userDoc.startingBalance)}`;
     $('stat-gain').textContent = '$0.00';
-    $('stat-days').textContent = '0';
-    $('stat-balance-sub').textContent = 'starting balance';
-    $('stat-target-sub').textContent = 'not yet started';
+    $('stat-gain').className = 'stat-value num';
     $('stat-gain-sub').textContent = '—';
+    $('stat-pct').textContent = '—';
+    $('stat-pct').className = 'stat-value num';
+    $('stat-pct-sub').textContent = 'not yet started';
+    $('stat-target').textContent = `$${fmtMoney(state.userDoc.startingBalance)}`;
+    $('stat-target-sub').textContent = 'starting balance';
+    $('stat-days').textContent = '0';
     $('stat-days-sub').textContent = 'until start';
     $('weeks-container').innerHTML = '';
     $('missing-alert-container').innerHTML = '';
@@ -1608,30 +1610,44 @@ function renderToday() {
   const diff = actualGain - targetGain;
   const tradingDays = tradingDaysThrough(today, startDate);
 
-  // Hero %: of cumulative gain target
-  let pctText = '—', pctClass = 'neutral';
+  // Hero: current balance, colored by ahead/behind status
+  $('hero-balance').textContent = `$${fmtMoney(currentBalance)}`;
+  let balanceClass = 'hero-pct';
+  if (targetGain > 0) {
+    if (diff > 0.5) balanceClass = 'hero-pct positive';
+    else if (diff < -0.5) balanceClass = 'hero-pct negative';
+    else balanceClass = 'hero-pct neutral';
+  }
+  $('hero-balance').className = balanceClass;
+
+  // Hero sub: shows ahead/behind dollar amount + freshness hint if not logged today
+  const todayLogged = state.balances[ymd(today)] != null;
+  let subContext = '';
+  if (!todayLogged) subContext = ' · update today\'s balance';
+  $('hero-sub').innerHTML = `<span class="num">${fmtMoneySigned(diff)}</span> ${diff >= 0 ? 'ahead of' : 'behind'} target${subContext}`;
+
+  // % vs Target card
+  let pctText = '—', pctClass = '';
   if (targetGain > 0) {
     const pct = (diff / targetGain) * 100;
     pctText = `${pct >= 0 ? '+' : '−'}${Math.abs(pct).toFixed(1)}%`;
-    pctClass = pct > 0.05 ? 'positive' : pct < -0.05 ? 'negative' : 'neutral';
-  } else if (tradingDays === 0) {
-    pctText = '—';
-    pctClass = 'neutral';
+    if (pct > 0.05) pctClass = 'gain';
+    else if (pct < -0.05) pctClass = 'loss';
   }
-  $('hero-pct').textContent = pctText;
-  $('hero-pct').className = `hero-pct ${pctClass}`;
+  $('stat-pct').textContent = pctText;
+  $('stat-pct').className = `stat-value num ${pctClass}`;
+  $('stat-pct-sub').textContent = 'cumulative';
 
-  const subBits = [];
-  subBits.push(`<span class="num">${fmtMoneySigned(diff)}</span> ${diff >= 0 ? 'ahead of' : 'behind'} target`);
-  $('hero-sub').innerHTML = subBits.join('');
-
-  $('stat-balance').textContent = `$${fmtMoney(currentBalance)}`;
-  $('stat-balance-sub').textContent = state.balances[ymd(today)] != null ? 'logged today' : 'last known';
-  $('stat-target').textContent = `$${fmtMoney(targetBalance)}`;
-  $('stat-target-sub').textContent = `target gain $${fmtMoney(targetGain)}`;
+  // Cumulative Gain card
   $('stat-gain').textContent = fmtMoneySigned(actualGain);
   $('stat-gain').className = `stat-value num ${actualGain >= 0 ? 'gain' : 'loss'}`;
   $('stat-gain-sub').textContent = `since ${fmtDate(startDate)}`;
+
+  // Target Today card
+  $('stat-target').textContent = `$${fmtMoney(targetBalance)}`;
+  $('stat-target-sub').textContent = `gain target $${fmtMoney(targetGain)}`;
+
+  // Trading Days card
   $('stat-days').textContent = tradingDays;
   $('stat-days-sub').textContent = `market days elapsed`;
 

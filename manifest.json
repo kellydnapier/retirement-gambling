@@ -1,7 +1,7 @@
 {
-  "name": "Retirement Gambling",
-  "short_name": "RG",
-  "description": "Daily stock gain goal tracker — only counts market days.",
+  "name": "Roth IRA Tracker",
+  "short_name": "Roth IRA",
+  "description": "Daily account balance tracker against a gain goal. Only counts market days.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
